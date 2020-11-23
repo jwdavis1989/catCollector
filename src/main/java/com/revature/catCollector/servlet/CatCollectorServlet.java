@@ -14,19 +14,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revature.catcollector.dao.DatabaseCatCollectorDAO;
 import com.revature.catCollector.exception.RoleNotFoundException;
 import com.revature.catCollector.model.CatCollector;
-import com.revature.catCollector.service.CatCollectorService;
+import com.revature.catCollector.service.CatService;
 import com.revature.catCollector.template.InsertCatCollectorTemplate;
 
 public class CatCollectorServlet extends HttpServlet{
 	
 	private ObjectMapper objectMapper = new ObjectMapper();
-	private CatCollectorService catCollectorService = new CatCollectorService();
+	private CatService catCollectorService = new CatService();
 	
 	public CatCollectorServlet() {
 		super();
 	}
 	
-	public CatCollectorServlet(ObjectMapper objectMapper, CatCollectorService catCollectorService) {
+	public CatCollectorServlet(ObjectMapper objectMapper, CatService catCollectorService) {
 		this.objectMapper = objectMapper;
 		this.catCollectorService = catCollectorService;
 	}

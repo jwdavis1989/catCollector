@@ -46,51 +46,74 @@ public class DatabaseCatDAO {
 		return Cats;
 	}
 	
-	public ArrayList<Cat> getAllCatsYouOwn(String yourOwnerName) {
+	public Cat getCatByUID(int uid) {
+			
+		Cat returnCat = new Cat();
+		try (Connection connection = JDBCUtility.getConnection()) {
+			
+			//Create SQL query
+			String sqlQuery = 
+					"SELECT UID, name, ownerName, color, breed, imageURL" +
+					"FROM Cats" + 
+					"WHERE UID = ?";
+			
+			//Create Prepared Statement to stop SQL Injection
+			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+			
+			//Fill in SQL Statement's values
+			prepdStatement.setInt(1, uid);
+			
+			ResultSet rs = prepdStatement.executeQuery(sqlQuery);
+			
+			//Fill in the return Cat's UID, name, ownerName, color, breed, imageURL
+			returnCat = new Cat(rs.getInt(1), rs.getString(2), 
+						rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6));
+			
+			return returnCat;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
-		String sqlQuery = 
-				"SELECT UID, name, ownerName, color, breed, imageURL" +
-				"FROM Cats" + 
-				"WHERE ownerName = ?";
+		return returnCat;
+	}
+	
+	public ArrayList<Cat> getAllCatsByOwner(String targetOwnerName) {
 		
-		PreparedStatement pstmt = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
-		
-		pstmt.setString(1, ownerName);
 		
 		//Allocate memory for the ArrayList that contains the returned cats
 		ArrayList<Cat> Cats = new ArrayList<>();
 		
 		try (Connection connection = JDBCUtility.getConnection()) {
-			connection.setAutoCommit(false);
+			
+			//Create SQL query
 			String sqlQuery = 
-					"INSERT INTO Cats "
-					+ "(name, ownerName, color, breed, imageURL)"
-					+ "VALUES "
-					+ "(?, ?, ?, ?, ?)";
+					"SELECT UID, name, ownerName, color, breed, imageURL" +
+					"FROM Cats" + 
+					"WHERE ownerName = ?";
 			
-			PreparedStatement pstmt = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+			//Create Prepared Statement to stop SQL Injection
+			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
 			
-			pstmt.setString(1, name);
-			pstmt.setString(2, ownerName);
-			pstmt.setString(3, color);
-			pstmt.setString(4, breed);
-			pstmt.setString(5, imageURL);
+			//Fill in SQL Statement's values
+			prepdStatement.setString(1, targetOwnerName);
 			
-			if (pstmt.executeUpdate() != 1) {
-				throw new SQLException("Inserting Cat failed, no rows were affected");
+			ResultSet rs = prepdStatement.executeQuery(sqlQuery);
+			
+			//Fill in each arrayList Cat's UID, name, ownerName, color, breed, imageURL
+			while (rs.next()) {
+				int UID = rs.getInt(1);
+				String name = rs.getString(2);
+				String ownerName = rs.getString(3);
+				String color = rs.getString(4);
+				String breed = rs.getString(5);
+				String imageURL = rs.getString(6);
+				
+				Cat cat = new Cat(UID, name, ownerName, color, breed, imageURL);
+				
+				Cats.add(cat);
 			}
 			
-			int autoId = 0;
-			ResultSet generatedKeys = pstmt.getGeneratedKeys();
-			if (generatedKeys.next()) {
-				autoId = generatedKeys.getInt(1);
-			} else {
-				throw new SQLException("Inserting Cat failed, no ID generated");
-			}
-			
-			connection.commit();
-			
-			return new Cat(autoId, name, ownerName, color, breed, imageURL);
+			return Cats;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -115,40 +138,29 @@ public class DatabaseCatDAO {
 	 * @param imageURL, the location of the image on the server's disk.
 	 * @return Cat or null
 	 */
-	public Cat insertCat(String name, String ownerName, String color, String breed, String imageURL) {
+	public Cat addNewCat(String name, String ownerName, String color, String breed, String imageURL) {
 		
 		try (Connection connection = JDBCUtility.getConnection()) {
-			connection.setAutoCommit(false); // Committing it goes into the whole idea of transactions. By default, Postgres is set to
-			// Automatically commit any changes you make to the database. Sometimes this is not ideal, especially if you want to 
-			// make sure all operations are successful before persisting changes (committing). 
-			// Bank transfers might be a good example. For example you will have to withdraw money from one account and deposit to another
-			// If you have auto-commit set to true, if you withdraw from the first account, and then somehow your database loses power,
-			// the withdraw from the first account would already have been committed
-			
-			// This is not ideal, because we would only want to commit once the withdraw from one account and the deposit to another account
-			// Has successfully been completed
-			
-			// ACID properties of transactions, Atomicity, Consistency, Isolation, Durability
 			String sqlQuery = 
 					"INSERT INTO Cats "
 					+ "(name, ownerName, color, breed, imageURL)"
 					+ "VALUES "
 					+ "(?, ?, ?, ?, ?)";
 			
-			PreparedStatement pstmt = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
 			
-			pstmt.setString(1, name);
-			pstmt.setString(2, ownerName);
-			pstmt.setString(3, color);
-			pstmt.setString(4, breed);
-			pstmt.setString(5, imageURL);
+			prepdStatement.setString(1, name);
+			prepdStatement.setString(2, ownerName);
+			prepdStatement.setString(3, color);
+			prepdStatement.setString(4, breed);
+			prepdStatement.setString(5, imageURL);
 			
-			if (pstmt.executeUpdate() != 1) {
+			if (prepdStatement.executeUpdate() != 1) {
 				throw new SQLException("Inserting Cat failed, no rows were affected");
 			}
 			
 			int autoId = 0;
-			ResultSet generatedKeys = pstmt.getGeneratedKeys();
+			ResultSet generatedKeys = prepdStatement.getGeneratedKeys();
 			if (generatedKeys.next()) {
 				autoId = generatedKeys.getInt(1);
 			} else {
@@ -165,4 +177,94 @@ public class DatabaseCatDAO {
 		return null;
 	}
 		
+
+public boolean updateCatByUID(int targetUID, String newName, String newOwnerName, String newColor, String newBreed) {
+	
+	//Cat object created to test update's success
+	Cat targetCat = getCatByUID(targetUID);
+	
+	//Stores whether the update was a success or not, defaults to not successful, as in all things in life
+	boolean returnSuccess = false;
+	
+	if (targetCat != null) {
+		try (Connection connection = JDBCUtility.getConnection()) {
+			String sqlQuery = 
+					"UPDATE Cats " 			+ 
+				    "SET name = ?, " 		+
+						"ownerName = ?, " 	+
+						"color = ?, " 		+
+						"breed = ?, " 		+
+						"image_URL = ?"		+
+					"WHERE UID = ?";
+			
+			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+			
+			prepdStatement.setString(1, newName);
+			prepdStatement.setString(2, newOwnerName);
+			prepdStatement.setString(3, newColor);
+			prepdStatement.setString(4, newBreed);
+			
+			//Concatenate relative URL to Color as Color name = the individual Image's name
+			prepdStatement.setString(5, "./resources/images/" + newColor);
+			prepdStatement.setInt(6, targetUID);
+			
+			if (prepdStatement.executeUpdate() != 1) {
+				throw new SQLException("Updating Cat failed, no rows were affected");
+			}
+			
+			//Commit the changes to the database
+			connection.commit();
+			
+			//Everything worked
+			returnSuccess = true;
+			
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+			}
+	}
+	
+	return returnSuccess;
 }
+	
+
+
+public boolean removeCatByUID(int targetUID) {
+	
+	//Cat object created to test update's success
+	Cat targetCat = getCatByUID(targetUID);
+	
+	//Stores whether the deletion was a success or not, defaults to not successful, as in all things in life
+	boolean returnSuccess = false;
+	
+	if (targetCat != null) {
+		try (Connection connection = JDBCUtility.getConnection()) {
+			String sqlQuery = 
+					"DELETE FROM Cats " + 
+					"WHERE UID = ?";
+			
+			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+		
+			prepdStatement.setInt(1, targetUID);
+			
+			if (prepdStatement.executeUpdate() != 1) {
+				throw new SQLException("Removal of Cat failed, no rows were affected");
+			}
+			
+			//Commit the changes to the database
+			connection.commit();
+			
+			//Everything worked
+			returnSuccess = true;
+			
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+			}
+	}
+	
+	return returnSuccess;
+	}
+	
+}
+
