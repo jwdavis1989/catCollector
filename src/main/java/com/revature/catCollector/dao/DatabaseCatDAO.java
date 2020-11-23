@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import com.revature.catCollector.model.Cat;
 import com.revature.catCollector.util.JDBCUtility;
 
-public class DatabaseCatDAO {
+public class DatabaseCatDAO 
+{
 
-	public ArrayList<Cat> getAllCats() {
+	public ArrayList<Cat> getAllCats() 
+	{
 		
 		String sqlQuery = 
 				"SELECT UID, name, ownerName, color, breed, imageURL" +
@@ -20,36 +22,41 @@ public class DatabaseCatDAO {
 		
 		ArrayList<Cat> Cats = new ArrayList<>();
 		
-		try (Connection connection = JDBCUtility.getConnection()) {
+		try (Connection connection = JDBCUtility.getConnection()) 
+		{
 			Statement stmt = connection.createStatement(); // Simple Statement, not to be confused Prepared Statement
 			ResultSet rs = stmt.executeQuery(sqlQuery);
 			
 			//Fill in each arrayList Cat's UID, name, ownerName, color, breed, imageURL
-			while (rs.next()) {
+			while (rs.next()) 
+			{
 				int UID = rs.getInt(1);
 				String name = rs.getString(2);
 				String ownerName = rs.getString(3);
 				String color = rs.getString(4);
 				String breed = rs.getString(5);
-				String imageURL = rs.getString(6);
 				
-				Cat cat = new Cat(UID, name, ownerName, color, breed, imageURL);
+				Cat cat = new Cat(UID, name, ownerName, color, breed);
 				
 				Cats.add(cat);
 			}
 			
 			return Cats;
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
 		
 		return Cats;
 	}
 	
-	public Cat getCatByUID(int uid) {
+	public Cat getCatByUID(int uid) 
+	{
 			
 		Cat returnCat = new Cat();
-		try (Connection connection = JDBCUtility.getConnection()) {
+		try (Connection connection = JDBCUtility.getConnection()) 
+		{
 			
 			//Create SQL query
 			String sqlQuery = 
@@ -67,23 +74,27 @@ public class DatabaseCatDAO {
 			
 			//Fill in the return Cat's UID, name, ownerName, color, breed, imageURL
 			returnCat = new Cat(rs.getInt(1), rs.getString(2), 
-						rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6));
+						rs.getString(3), rs.getString(4), rs.getString(5));
 			
 			return returnCat;
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
 		
 		return returnCat;
 	}
 	
-	public ArrayList<Cat> getAllCatsByOwner(String targetOwnerName) {
+	public ArrayList<Cat> getAllCatsByOwner(String targetOwnerName) 
+	{
 		
 		
 		//Allocate memory for the ArrayList that contains the returned cats
 		ArrayList<Cat> Cats = new ArrayList<>();
 		
-		try (Connection connection = JDBCUtility.getConnection()) {
+		try (Connection connection = JDBCUtility.getConnection()) 
+		{
 			
 			//Create SQL query
 			String sqlQuery = 
@@ -100,21 +111,23 @@ public class DatabaseCatDAO {
 			ResultSet rs = prepdStatement.executeQuery(sqlQuery);
 			
 			//Fill in each arrayList Cat's UID, name, ownerName, color, breed, imageURL
-			while (rs.next()) {
+			while (rs.next()) 
+			{
 				int UID = rs.getInt(1);
 				String name = rs.getString(2);
 				String ownerName = rs.getString(3);
 				String color = rs.getString(4);
 				String breed = rs.getString(5);
-				String imageURL = rs.getString(6);
 				
-				Cat cat = new Cat(UID, name, ownerName, color, breed, imageURL);
+				Cat cat = new Cat(UID, name, ownerName, color, breed);
 				
 				Cats.add(cat);
 			}
 			
 			return Cats;
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
 		
@@ -138,9 +151,11 @@ public class DatabaseCatDAO {
 	 * @param imageURL, the location of the image on the server's disk.
 	 * @return Cat or null
 	 */
-	public Cat addNewCat(String name, String ownerName, String color, String breed, String imageURL) {
+	public Cat addNewCat(String name, String ownerName, String color, String breed) 
+	{
 		
-		try (Connection connection = JDBCUtility.getConnection()) {
+		try (Connection connection = JDBCUtility.getConnection()) 
+		{
 			String sqlQuery = 
 					"INSERT INTO Cats "
 					+ "(name, ownerName, color, breed, imageURL)"
@@ -153,24 +168,30 @@ public class DatabaseCatDAO {
 			prepdStatement.setString(2, ownerName);
 			prepdStatement.setString(3, color);
 			prepdStatement.setString(4, breed);
-			prepdStatement.setString(5, imageURL);
+			prepdStatement.setString(5, "./resources/images/" + color);
 			
-			if (prepdStatement.executeUpdate() != 1) {
+			if (prepdStatement.executeUpdate() != 1) 
+			{
 				throw new SQLException("Inserting Cat failed, no rows were affected");
 			}
 			
 			int autoId = 0;
 			ResultSet generatedKeys = prepdStatement.getGeneratedKeys();
-			if (generatedKeys.next()) {
+			if (generatedKeys.next()) 
+			{
 				autoId = generatedKeys.getInt(1);
-			} else {
+			} 
+			else 
+			{
 				throw new SQLException("Inserting Cat failed, no ID generated");
 			}
 			
 			connection.commit();
 			
-			return new Cat(autoId, name, ownerName, color, breed, imageURL);
-		} catch (SQLException e) {
+			return new Cat(autoId, name, ownerName, color, breed);
+		} 
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
 		
@@ -178,91 +199,99 @@ public class DatabaseCatDAO {
 	}
 		
 
-public boolean updateCatByUID(int targetUID, String newName, String newOwnerName, String newColor, String newBreed) {
-	
-	//Cat object created to test update's success
-	Cat targetCat = getCatByUID(targetUID);
-	
-	//Stores whether the update was a success or not, defaults to not successful, as in all things in life
-	boolean returnSuccess = false;
-	
-	if (targetCat != null) {
-		try (Connection connection = JDBCUtility.getConnection()) {
-			String sqlQuery = 
-					"UPDATE Cats " 			+ 
-				    "SET name = ?, " 		+
-						"ownerName = ?, " 	+
-						"color = ?, " 		+
-						"breed = ?, " 		+
-						"image_URL = ?"		+
-					"WHERE UID = ?";
-			
-			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
-			
-			prepdStatement.setString(1, newName);
-			prepdStatement.setString(2, newOwnerName);
-			prepdStatement.setString(3, newColor);
-			prepdStatement.setString(4, newBreed);
-			
-			//Concatenate relative URL to Color as Color name = the individual Image's name
-			prepdStatement.setString(5, "./resources/images/" + newColor);
-			prepdStatement.setInt(6, targetUID);
-			
-			if (prepdStatement.executeUpdate() != 1) {
-				throw new SQLException("Updating Cat failed, no rows were affected");
-			}
-			
-			//Commit the changes to the database
-			connection.commit();
-			
-			//Everything worked
-			returnSuccess = true;
-			
-		} 
-		catch (SQLException e) {
-			e.printStackTrace();
-			}
-	}
-	
-	return returnSuccess;
-}
-	
-
-
-public boolean removeCatByUID(int targetUID) {
-	
-	//Cat object created to test update's success
-	Cat targetCat = getCatByUID(targetUID);
-	
-	//Stores whether the deletion was a success or not, defaults to not successful, as in all things in life
-	boolean returnSuccess = false;
-	
-	if (targetCat != null) {
-		try (Connection connection = JDBCUtility.getConnection()) {
-			String sqlQuery = 
-					"DELETE FROM Cats " + 
-					"WHERE UID = ?";
-			
-			PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+	public boolean updateCatByUID(int targetUID, String newName, String newOwnerName, String newColor, String newBreed) 
+	{
 		
-			prepdStatement.setInt(1, targetUID);
-			
-			if (prepdStatement.executeUpdate() != 1) {
-				throw new SQLException("Removal of Cat failed, no rows were affected");
+		//Cat object created to test update's success
+		Cat targetCat = getCatByUID(targetUID);
+		
+		//Stores whether the update was a success or not, defaults to not successful, as in all things in life
+		boolean returnSuccess = false;
+		
+		if (targetCat != null) {
+			try (Connection connection = JDBCUtility.getConnection()) 
+			{
+				String sqlQuery = 
+						"UPDATE Cats " 			+ 
+					    "SET name = ?, " 		+
+							"ownerName = ?, " 	+
+							"color = ?, " 		+
+							"breed = ?, " 		+
+							"image_URL = ?"		+
+						"WHERE UID = ?";
+				
+				PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+				
+				prepdStatement.setString(1, newName);
+				prepdStatement.setString(2, newOwnerName);
+				prepdStatement.setString(3, newColor);
+				prepdStatement.setString(4, newBreed);
+				
+				//Concatenate relative URL to Color as Color name = the individual Image's name
+				prepdStatement.setString(5, "./resources/images/" + newColor);
+				prepdStatement.setInt(6, targetUID);
+				
+				if (prepdStatement.executeUpdate() != 1) 
+				{
+					throw new SQLException("Updating Cat failed, no rows were affected");
+				}
+				
+				//Commit the changes to the database
+				connection.commit();
+				
+				//Everything worked
+				returnSuccess = true;
+				
+			} 
+			catch (SQLException e) 
+			{
+				e.printStackTrace();
 			}
-			
-			//Commit the changes to the database
-			connection.commit();
-			
-			//Everything worked
-			returnSuccess = true;
-			
-		} 
-		catch (SQLException e) {
-			e.printStackTrace();
-			}
+		}
+		
+		return returnSuccess;
 	}
 	
+
+
+	public boolean removeCatByUID(int targetUID) 
+	{
+		
+		//Cat object created to test update's success
+		Cat targetCat = getCatByUID(targetUID);
+		
+		//Stores whether the deletion was a success or not, defaults to not successful, as in all things in life
+		boolean returnSuccess = false;
+		
+		if (targetCat != null) {
+			try (Connection connection = JDBCUtility.getConnection()) 
+			{
+				String sqlQuery = 
+						"DELETE FROM Cats " + 
+						"WHERE UID = ?";
+				
+				PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+			
+				prepdStatement.setInt(1, targetUID);
+				
+				if (prepdStatement.executeUpdate() != 1) 
+				{
+					throw new SQLException("Removal of Cat failed, no rows were affected");
+				}
+				
+				//Commit the changes to the database
+				connection.commit();
+				
+				//Everything worked
+				returnSuccess = true;
+				
+			} 
+			catch (SQLException e) 
+			{
+				e.printStackTrace();
+			}
+		}
+		
 	return returnSuccess;
 	}
 	

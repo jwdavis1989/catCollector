@@ -4,17 +4,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.revature.catCollector.dao.DatabaseCatDAO;
-import com.revature.catCollector.dao.DatabaseOwnerDAO;
 import com.revature.catCollector.model.Cat;
-import com.revature.catCollector.model.Owner;
-import com.revature.catCollector.template.InsertCatTemplate;
+//import com.revature.catCollector.template.InsertCatTemplate;
 
-public class CatService {
+public class CatService 
+{
 	
 	private DatabaseCatDAO catDAO;
-	private DatabaseOwnerDAO ownerDAO;
 	
-	public CatService() {
+	public CatService() 
+	{
 		this.catDAO = new DatabaseCatDAO();
 	}
 	
@@ -26,44 +25,79 @@ public class CatService {
 	
 	// Look into using Mockito
 	// There should definitely be a lot of articles about mocking DAOs
-	public CatService(DatabaseCatDAO catDAO, DatabaseOwnerDAO ownerDAO) {
+	public CatService(DatabaseCatDAO catDAO) 
+	{
 		this.catDAO = catDAO;
-		this.ownerDAO = ownerDAO;
 	}
 	
-	public ArrayList<Cat> getAllCats() {
-		// If you have additional you want to add later, you can easily do it by something like this
-		return catDAO.getAllCats();
+	public ArrayList<Cat> getAllCats() throws SQLException 
+	{
+		
+		//Store the result for exception handling
+		ArrayList<Cat> result = catDAO.getAllCats();
+		if (result.isEmpty()) 
+		{
+			throw new SQLException("Get All Cats failed.");
+		}
+			return result;
 	}
 	
-//	public void showCats(ArrayList<Cat> catCollectors) {
-//		for (Cat catCollector : catCollectors) {
-//			System.out.println(catCollector);
-//		}
-//	}
-//	
-//	public int search(ArrayList<Cat> catCollectors, String name) {
-//		int index = -1;
-//		for(Cat catCollector:catCollectors) {
-//			index++;
-//			if(catCollector.getName().equals(name)) {
-//				return index;
-//			}
-//		}
-//		return -1;
-//		
-//	}
-//	
-//	public Cat setCat(ArrayList<Cat> catCollectors, String name, String owner){
-//		// Set owner of Cat
-//				int index = this.search(catCollectors, name);
-//				if(index == -1) {
-//					System.out.println("Cat not found Exception"); // we could make our own exception
-//					return null;
-//				}else {
-//
-//					catCollectors.get(index).setowner(owner);
-//					return catCollectors.get(index);
-//				}
-//	}
+	public Cat getCatByUID(int uid)  throws SQLException 
+	{		
+		//Store the result for exception handling
+		Cat result = catDAO.getCatByUID(uid);
+		
+		if (result == null) 
+		{
+			throw new SQLException("Get Cat by UID failed.");
+		}
+				
+		return result;
+	}
+	
+	public ArrayList<Cat> getAllCatsByOwner(String username) throws SQLException 
+	{
+		//Store the result for exception handling
+		ArrayList<Cat> result = catDAO.getAllCatsByOwner(username);
+		if (result.isEmpty()) 
+		{
+			throw new SQLException("Get All Cats By Owner failed.");
+		}
+		return result;
+	}
+	
+	public Cat addNewCat(String name, String ownerName, String color, String breed) throws SQLException 
+	{
+		//Store the result for exception handling
+		Cat newCat = catDAO.addNewCat(name, ownerName, color, breed);
+		
+		if (newCat == null) 
+		{
+			throw new SQLException("Adding new Cat failed.");
+		}
+		
+		return newCat;
+	}
+	
+	public boolean updateCatByUID(int targetUID, String newName, String newOwnerName, String newColor, String newBreed)  throws SQLException
+	{
+		//Store the result for exception handling
+		boolean result = catDAO.updateCatByUID(targetUID, newName, newOwnerName, newColor, newBreed);
+		if (!result) 
+		{
+			throw new SQLException("Updating Cat failed. 0 Rows affected.");
+		}
+		return result;
+	}
+	
+	public boolean removeCatByUID(int targetUID) throws SQLException 
+	{
+		//Store the result for exception handling
+		boolean result = catDAO.removeCatByUID(targetUID);
+		if (!result) 
+		{
+			throw new SQLException("Remove Cat failed. 0 Rows affected.");
+		}
+		return result;
+	}
 }
