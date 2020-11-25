@@ -87,4 +87,27 @@ public class OwnerService
 		}
 		return result;
 	}
+	
+	public Owner loginOwner(String name, String password, String newSessionData)  throws SQLException
+	{
+		//Store the result for exception handling
+		Owner result = ownerDAO.loginOwner(name, password, newSessionData);
+		if (result == null) 
+		{
+			throw new SQLException("Updating Owner Session Data failed. 0 Rows affected.");
+		}
+		return result;
+	}
+	
+	public Boolean logoutOwner(String name, String password) throws SQLException
+	{
+		//Store the result for exception handling
+		Boolean result = ownerDAO.logoutOwner(name, password);
+		if (result == null) 
+		{
+			throw new SQLException("Updating Owner Session Data failed. 0 Rows affected.");
+		}
+		return result;
+	}
+	
 }

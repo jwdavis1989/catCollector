@@ -17,8 +17,7 @@ public class DatabaseCatDAO
 	{
 		
 		String sqlQuery = 
-				"SELECT UID, name, ownerName, color, breed, imageURL" +
-				"FROM Cats";
+				"SELECT * FROM Cats";
 		
 		ArrayList<Cat> Cats = new ArrayList<>();
 		
@@ -60,8 +59,8 @@ public class DatabaseCatDAO
 			
 			//Create SQL query
 			String sqlQuery = 
-					"SELECT UID, name, ownerName, color, breed, imageURL" +
-					"FROM Cats" + 
+					"SELECT * " +
+					"FROM Cats " + 
 					"WHERE UID = ?";
 			
 			//Create Prepared Statement to stop SQL Injection
@@ -70,11 +69,18 @@ public class DatabaseCatDAO
 			//Fill in SQL Statement's values
 			prepdStatement.setInt(1, uid);
 			
-			ResultSet rs = prepdStatement.executeQuery(sqlQuery);
+			ResultSet rs = prepdStatement.executeQuery();
 			
 			//Fill in the return Cat's UID, name, ownerName, color, breed, imageURL
-			returnCat = new Cat(rs.getInt(1), rs.getString(2), 
+			if (rs.next()) 
+			{
+				returnCat = new Cat(rs.getInt(1), rs.getString(2), 
 						rs.getString(3), rs.getString(4), rs.getString(5));
+			}
+			else
+			{
+				throw new SQLException("Cat not found with this UID");
+			}
 			
 			return returnCat;
 		} 
@@ -98,8 +104,8 @@ public class DatabaseCatDAO
 			
 			//Create SQL query
 			String sqlQuery = 
-					"SELECT UID, name, ownerName, color, breed, imageURL" +
-					"FROM Cats" + 
+					"SELECT UID, name, ownerName, color, breed, imageURL " +
+					"FROM Cats " + 
 					"WHERE ownerName = ?";
 			
 			//Create Prepared Statement to stop SQL Injection
@@ -156,9 +162,10 @@ public class DatabaseCatDAO
 		
 		try (Connection connection = JDBCUtility.getConnection()) 
 		{
+			connection.setAutoCommit(false);
 			String sqlQuery = 
 					"INSERT INTO Cats "
-					+ "(name, ownerName, color, breed, imageURL)"
+					+ "(name, ownerName, color, breed, imageURL) "
 					+ "VALUES "
 					+ "(?, ?, ?, ?, ?)";
 			
@@ -211,13 +218,14 @@ public class DatabaseCatDAO
 		if (targetCat != null) {
 			try (Connection connection = JDBCUtility.getConnection()) 
 			{
+				connection.setAutoCommit(false);
 				String sqlQuery = 
 						"UPDATE Cats " 			+ 
 					    "SET name = ?, " 		+
 							"ownerName = ?, " 	+
 							"color = ?, " 		+
 							"breed = ?, " 		+
-							"image_URL = ?"		+
+							"imageURL = ? "		+
 						"WHERE UID = ?";
 				
 				PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
@@ -266,6 +274,7 @@ public class DatabaseCatDAO
 		if (targetCat != null) {
 			try (Connection connection = JDBCUtility.getConnection()) 
 			{
+				connection.setAutoCommit(false);
 				String sqlQuery = 
 						"DELETE FROM Cats " + 
 						"WHERE UID = ?";

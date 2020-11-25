@@ -44,7 +44,7 @@ public class JDBCUtility {
 		
 		String url = "jdbc:postgresql://localhost:5432/postgres";
 		String username = "postgres";
-		String password = "admin";
+		String password = "password";
 		
 		/*
 		 * Not really good practice to store directly in the code

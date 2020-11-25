@@ -17,7 +17,7 @@ public class DatabaseOwnerDAO
 		try (Connection connection = JDBCUtility.getConnection()) 
 		{
 			String sqlQuery = 
-					"SELECT username, password, isAdmin " +
+					"SELECT * " +
 					"FROM Owners " +
 					"WHERE username = ?";
 			
@@ -55,15 +55,16 @@ public class DatabaseOwnerDAO
 			{
 				String sqlQuery = 
 						"INSERT INTO Owners "
-						+ "(username, password, isAdmin)"
+						+ "(username, password, isAdmin, sessionData)"
 						+ "VALUES "
-						+ "(?, ?, ?)";
+						+ "(?, ?, ?, ?)";
 				
 				PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
 				
 				prepdStatement.setString(1, username);
 				prepdStatement.setString(2, password);
 				prepdStatement.setBoolean(3, isAdmin);
+				prepdStatement.setString(4, null);
 				
 				if (prepdStatement.executeUpdate() != 1) 
 				{
@@ -208,4 +209,67 @@ public class DatabaseOwnerDAO
 		
 	return returnSuccess;
 	}
+	
+	public Owner loginOwner(String name, String password, String newSessionData) 
+	{
+		//Pull user data to compare passwords
+		Owner loggingOwner = this.getOwnerByUsername(name);
+		
+		//If the password is a match to the username
+		if (password == loggingOwner.getPassword())
+		{
+			//Update user's sessionData with new sessionData
+			if (loggingOwner != null) 
+			{
+				//Block out password data for security
+				loggingOwner.setPassword(null);
+				
+				try (Connection connection = JDBCUtility.getConnection()) 
+				{
+					String sqlQuery = 
+							"UPDATE Owners " 		+ 
+						    "SET sessionData = ?, " 		+
+							"WHERE username = ?";
+					
+					PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
+					
+					prepdStatement.setString(1, newSessionData);
+					prepdStatement.setString(2, name);
+					
+					if (prepdStatement.executeUpdate() != 1) 
+					{
+						throw new SQLException("Updating Owner Session Data failed, no rows were affected");
+					}
+					
+					//Commit the changes to the database
+					connection.commit();
+				} 
+				catch (SQLException e) 
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return loggingOwner;
+	}
+	
+	public Boolean logoutOwner(String name, String password) 
+	{
+		//Stores whether the update was a success or not, defaults to not successful, as in all things in life
+		boolean returnSuccess = false;
+		
+		//Use the loginOwner Method to check the user, then attempt to set their sessionData to null
+		Owner loggingOwner = this.loginOwner(name, password, null);
+		
+		//If the database successfully updated the user
+		if (loggingOwner != null)
+		{
+			//Set return flag to true
+			returnSuccess = true;
+		}
+		return returnSuccess;
+	}
+	
+	
 }

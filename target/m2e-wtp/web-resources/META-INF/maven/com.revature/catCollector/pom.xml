@@ -7,9 +7,6 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
 
-  <name>catCollector</name>
-  <url>http://maven.apache.org</url>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -54,8 +51,35 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core -->
+		<dependency>
+		    <groupId>org.apache.tomcat.embed</groupId>
+		    <artifactId>tomcat-embed-core</artifactId>
+		    <version>8.5.23</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.apache.tomcat.maven</groupId>
+            <artifactId>tomcat7-maven-plugin</artifactId>
+            <version>2.2</version>
+        </dependency>
+		
   </dependencies>
-  <build>
-		<finalName>CatCollectorServer</finalName>
+  
+	<build>
+		<finalName>catCollectorServer</finalName>
+	    <pluginManagement>
+	        <plugins>
+	            <plugin>
+	                <groupId>org.apache.tomcat.maven</groupId>
+	                <artifactId>tomcat7-maven-plugin</artifactId>
+	                <version>2.2</version>
+	                <configuration>
+		                <path>/${project.build.finalName}</path>
+		                <finalName>executable.jar</finalName>
+		            </configuration>
+	            </plugin>
+	        </plugins>
+	    </pluginManagement>
 	</build>
 </project>
