@@ -7,7 +7,7 @@ Users will be able to choose the color of cat they want, represented as an image
 
 
 ## PostgreSQL Tables
-### Owners (
+### Owners
 	username VARCHAR(255) PRIMARY KEY
 	password VARCHAR(255) NOT NULL
 	admin BOOLEAN
