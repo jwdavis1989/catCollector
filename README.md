@@ -1,7 +1,9 @@
 
 # CatCollector:
 ## What is Cat Collector?
-Cat Collector is a website that allows cat lovers to adopt new cats, and keep track of their roster of delightful kitties. Eventually, the cats will have an image stored on-disk on the server to represent them for graphical display.
+Cat Collector is a website that allows cat lovers to adopt new cats, and keep track of their roster of delightful kitties. 
+
+Users will be able to choose the color of cat they want, represented as an image stored on-disk on the server.
 
 
 ## PostgreSQL Tables
@@ -67,7 +69,7 @@ Reads in a JSON object and returns the constructed cat.
 ### PUT /owner
 Reads in a JSON object and returns the constructed owner.
 
-### DELETE /cat?uid=${UID}
+### DELETE /cat?UID=${UID}
 Delete the cat with the inputted unique identification number.
 
 ### DELETE /owner?username=${username}
