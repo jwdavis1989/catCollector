@@ -13,7 +13,7 @@ Users will be able to choose the color of cat they want, represented as an image
 	admin BOOLEAN
 	sessionData VARCHAR(255)
 
-### Cats (
+### Cats
 	UID SERIAL PRIMARY KEY
 	name VARCHAR(255) NOT NULL
 	ownerName VARCHAR(255) NOT NULL
@@ -47,6 +47,7 @@ This will edit a Cat in the database based on id.
 
 ### POST /owner
 This will edit a User in the database based on username.
+Allows you to change the Admin rights of a user, as well as set or blank their sessionData.
 
 ### GET /cat
 Returns all cats.
