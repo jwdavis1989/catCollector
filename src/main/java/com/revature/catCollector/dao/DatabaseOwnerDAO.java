@@ -5,12 +5,49 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
+import com.revature.catCollector.model.Cat;
 import com.revature.catCollector.model.Owner;
 import com.revature.catCollector.util.JDBCUtility;
 
 public class DatabaseOwnerDAO 
 {
+	public ArrayList<Owner> getAllOwners() 
+	{
+		
+		String sqlQuery = 
+				"SELECT * FROM Owners";
+		
+		ArrayList<Owner> Owners = new ArrayList<>();
+		
+		try (Connection connection = JDBCUtility.getConnection()) 
+		{
+			Statement stmt = connection.createStatement(); // Simple Statement, not to be confused Prepared Statement
+			ResultSet rs = stmt.executeQuery(sqlQuery);
+			
+			//Fill in each arrayList Cat's UID, name, ownerName, color, breed, imageURL
+			while (rs.next()) 
+			{
+				String username = rs.getString(1);
+				String password = rs.getString(2);
+				Boolean isAdmin = rs.getBoolean(3);
+				String sessionData = rs.getString(4);
+				
+				Owner owner = new Owner(username, password, isAdmin);
+				
+				Owners.add(owner);
+			}
+			
+			return Owners;
+		} 
+		catch (SQLException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		return Owners;
+	}
 	public Owner getOwnerByUsername(String name) 
 	{
 		
@@ -83,7 +120,7 @@ public class DatabaseOwnerDAO
 		return null;
 	}
 	
-	public boolean removeOwnerByName(String targetName) 
+	public boolean removeOwnerByUsername(String targetName) 
 	{
 		
 		//Owner object created to test update's success
@@ -124,11 +161,11 @@ public class DatabaseOwnerDAO
 	return returnSuccess;
 	}
 
-	public boolean changeOwnerAdminRightsByUsername(String targetName, Boolean newAdminState) 
+	public boolean updateOwnerByUsername(String targetUsername, String newPassword, Boolean newIsAdmin, String newSessionData) 
 	{
 		
-		//Owner object created to test update's success
-		Owner targetOwner = getOwnerByUsername(targetName);
+		//Cat object created to test update's success
+		Owner targetOwner = getOwnerByUsername(targetUsername);
 		
 		//Stores whether the update was a success or not, defaults to not successful, as in all things in life
 		boolean returnSuccess = false;
@@ -136,62 +173,24 @@ public class DatabaseOwnerDAO
 		if (targetOwner != null) {
 			try (Connection connection = JDBCUtility.getConnection()) 
 			{
+				connection.setAutoCommit(false);
 				String sqlQuery = 
 						"UPDATE Owners " 		+ 
-					    "SET isAdmin = ?, " 		+
-						"WHERE username = ?";
-				
-				PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
-				
-				prepdStatement.setBoolean(1, newAdminState);
-				prepdStatement.setString(2, targetName);
-				
-				if (prepdStatement.executeUpdate() != 1) 
-				{
-					throw new SQLException("Updating Owner Admin Rights failed, no rows were affected");
-				}
-				
-				//Commit the changes to the database
-				connection.commit();
-				
-				//Everything worked
-				returnSuccess = true;
-				
-			} 
-			catch (SQLException e) 
-			{
-				e.printStackTrace();
-			}
-		}
-		
-	return returnSuccess;
-	}
-
-	public boolean changeOwnerPasswordByUsername(String targetName, String newPassword) 
-	{
-		
-		//Owner object created to test update's success
-		Owner targetOwner = getOwnerByUsername(targetName);
-		
-		//Stores whether the update was a success or not, defaults to not successful, as in all things in life
-		boolean returnSuccess = false;
-		
-		if (targetOwner != null) {
-			try (Connection connection = JDBCUtility.getConnection()) 
-			{
-				String sqlQuery = 
-						"UPDATE Owners " 		+ 
-					    "SET password = ?, " 		+
+					    "SET password = ?, " 	+
+					    "isAdmin = ? "			+
+					    "sessionData = ? "		+
 						"WHERE username = ?";
 				
 				PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
 				
 				prepdStatement.setString(1, newPassword);
-				prepdStatement.setString(2, targetName);
+				prepdStatement.setBoolean(2, newIsAdmin);
+				prepdStatement.setString(3, newSessionData);
+				prepdStatement.setString(4, targetUsername);
 				
 				if (prepdStatement.executeUpdate() != 1) 
 				{
-					throw new SQLException("Updating Owner Password failed, no rows were affected");
+					throw new SQLException("Updating Owner failed, no rows were affected");
 				}
 				
 				//Commit the changes to the database
@@ -207,69 +206,6 @@ public class DatabaseOwnerDAO
 			}
 		}
 		
-	return returnSuccess;
-	}
-	
-	public Owner loginOwner(String name, String password, String newSessionData) 
-	{
-		//Pull user data to compare passwords
-		Owner loggingOwner = this.getOwnerByUsername(name);
-		
-		//If the password is a match to the username
-		if (password == loggingOwner.getPassword())
-		{
-			//Update user's sessionData with new sessionData
-			if (loggingOwner != null) 
-			{
-				//Block out password data for security
-				loggingOwner.setPassword(null);
-				
-				try (Connection connection = JDBCUtility.getConnection()) 
-				{
-					String sqlQuery = 
-							"UPDATE Owners " 		+ 
-						    "SET sessionData = ?, " 		+
-							"WHERE username = ?";
-					
-					PreparedStatement prepdStatement = connection.prepareStatement(sqlQuery);
-					
-					prepdStatement.setString(1, newSessionData);
-					prepdStatement.setString(2, name);
-					
-					if (prepdStatement.executeUpdate() != 1) 
-					{
-						throw new SQLException("Updating Owner Session Data failed, no rows were affected");
-					}
-					
-					//Commit the changes to the database
-					connection.commit();
-				} 
-				catch (SQLException e) 
-				{
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return loggingOwner;
-	}
-	
-	public Boolean logoutOwner(String name, String password) 
-	{
-		//Stores whether the update was a success or not, defaults to not successful, as in all things in life
-		boolean returnSuccess = false;
-		
-		//Use the loginOwner Method to check the user, then attempt to set their sessionData to null
-		Owner loggingOwner = this.loginOwner(name, password, null);
-		
-		//If the database successfully updated the user
-		if (loggingOwner != null)
-		{
-			//Set return flag to true
-			returnSuccess = true;
-		}
 		return returnSuccess;
 	}
-	
-	
 }

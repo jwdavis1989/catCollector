@@ -1,8 +1,10 @@
 package com.revature.catCollector.service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import com.revature.catCollector.dao.DatabaseOwnerDAO;
+import com.revature.catCollector.model.Cat;
 import com.revature.catCollector.model.Owner;
 //import com.revature.ownerCollector.template.InsertOwnerTemplate;
 
@@ -29,6 +31,17 @@ public class OwnerService
 		this.ownerDAO = ownerDAO;
 	}
 	 
+	public ArrayList<Owner> getAllOwners() throws SQLException 
+	{
+		
+		//Store the result for exception handling
+		ArrayList<Owner> result = ownerDAO.getAllOwners();
+		if (result.isEmpty()) 
+		{
+			throw new SQLException("Get All Owners failed.");
+		}
+			return result;
+	}
 	public Owner getOwnerByUsername(String name)  throws SQLException
 	{		
 		//Store the result for exception handling
@@ -36,7 +49,7 @@ public class OwnerService
 		
 		if (result == null) 
 		{
-			throw new SQLException("Get Owner by UID failed.");
+			throw new SQLException("Get Owner by Username failed.");
 		}
 				
 		return result;
@@ -54,58 +67,26 @@ public class OwnerService
 		
 		return newOwner;
 	}
+
 	
-	public boolean changeOwnerAdminRightsByUsername(String targetName, Boolean newAdminState)  throws SQLException
+	public boolean updateOwnerByUsername(String targetUsername, String newPassword, Boolean newIsAdmin, String newSessionData) throws SQLException
 	{
 		//Store the result for exception handling
-		boolean result = ownerDAO.changeOwnerAdminRightsByUsername(targetName, newAdminState);
+		boolean result = ownerDAO.updateOwnerByUsername(targetUsername, newPassword, newIsAdmin, newSessionData);
 		if (!result) 
 		{
-			throw new SQLException("Updating Owner Admin Rights failed. 0 Rows affected.");
+			throw new SQLException("Updating Owner failed. 0 Rows affected.");
 		}
 		return result;
 	}
 	
-	public boolean changeOwnerPasswordByUsername(String targetName, String newPassword)  throws SQLException
+	public boolean removeOwnerByUsername(String targetName) throws SQLException 
 	{
 		//Store the result for exception handling
-		boolean result = ownerDAO.changeOwnerPasswordByUsername(targetName, newPassword);
-		if (!result) 
-		{
-			throw new SQLException("Updating Owner Admin Rights failed. 0 Rows affected.");
-		}
-		return result;
-	}
-	
-	public boolean removeOwnerByName(String targetName) throws SQLException 
-	{
-		//Store the result for exception handling
-		boolean result = ownerDAO.removeOwnerByName(targetName);
+		boolean result = ownerDAO.removeOwnerByUsername(targetName);
 		if (!result) 
 		{
 			throw new SQLException("Remove Owner failed. 0 Rows affected.");
-		}
-		return result;
-	}
-	
-	public Owner loginOwner(String name, String password, String newSessionData)  throws SQLException
-	{
-		//Store the result for exception handling
-		Owner result = ownerDAO.loginOwner(name, password, newSessionData);
-		if (result == null) 
-		{
-			throw new SQLException("Updating Owner Session Data failed. 0 Rows affected.");
-		}
-		return result;
-	}
-	
-	public Boolean logoutOwner(String name, String password) throws SQLException
-	{
-		//Store the result for exception handling
-		Boolean result = ownerDAO.logoutOwner(name, password);
-		if (result == null) 
-		{
-			throw new SQLException("Updating Owner Session Data failed. 0 Rows affected.");
 		}
 		return result;
 	}

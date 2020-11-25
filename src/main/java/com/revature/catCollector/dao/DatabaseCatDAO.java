@@ -104,7 +104,7 @@ public class DatabaseCatDAO
 			
 			//Create SQL query
 			String sqlQuery = 
-					"SELECT UID, name, ownerName, color, breed, imageURL " +
+					"SELECT * " +
 					"FROM Cats " + 
 					"WHERE ownerName = ?";
 			
@@ -236,7 +236,7 @@ public class DatabaseCatDAO
 				prepdStatement.setString(4, newBreed);
 				
 				//Concatenate relative URL to Color as Color name = the individual Image's name
-				prepdStatement.setString(5, "./resources/images/" + newColor);
+				prepdStatement.setString(5, "/resources/images/" + newColor);
 				prepdStatement.setInt(6, targetUID);
 				
 				if (prepdStatement.executeUpdate() != 1) 

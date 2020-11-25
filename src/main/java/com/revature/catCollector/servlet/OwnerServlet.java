@@ -14,55 +14,50 @@ import org.apache.log4j.Logger;
 
 //import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.revature.catCollector.model.Cat;
-import com.revature.catCollector.service.CatService;
+import com.revature.catCollector.model.Owner;
+import com.revature.catCollector.service.OwnerService;
 
 
 
-public class CatServlet extends HttpServlet
+public class OwnerServlet extends HttpServlet
 {	
-	//static Logger log = LogManager.getLogger(CatServlet.class);
+	//static Logger log = LogManager.getLogger(OwnerServlet.class);
 	private ObjectMapper objectMapper = new ObjectMapper();
-	private CatService catService = new CatService();
+	private OwnerService ownerService = new OwnerService();
 	
-	public CatServlet() 
+	public OwnerServlet() 
 	{
 		super();
 	}
 	
-	public CatServlet(ObjectMapper objectMapper, CatService catService) 
+	public OwnerServlet(ObjectMapper objectMapper, OwnerService ownerService) 
 	{
 		this.objectMapper = objectMapper;
-		this.catService = catService;
+		this.ownerService = ownerService;
 	}
 
 	//Read - CRUD
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException 
 	{	
-		String jsonString;
+		String jsonString = "";
 		try 
 		{
-			String owner = req.getParameter("owner");
-			String uid = req.getParameter("UID");
+			String username = req.getParameter("username");
 			
-			if (owner != null)
+			if (username != null)
 			{
-				jsonString = objectMapper.writeValueAsString(catService.getAllCatsByOwner(owner));
-			}
-			else if (uid != null)
-			{
-				jsonString = objectMapper.writeValueAsString(catService.getCatByUID(Integer.parseInt(uid)));
+				jsonString = objectMapper.writeValueAsString(ownerService.getOwnerByUsername(username));
 			}
 			else
 			{
-				jsonString = objectMapper.writeValueAsString(catService.getAllCats());
+				jsonString = objectMapper.writeValueAsString(ownerService.getAllOwners());
 			}
 
 			//Added generated JSON to the Response, so it can be used by the front end
 			resp.getWriter().append(jsonString);
 			
-			resp.setContentType("application/json"); // This corresponds to MIME type standards
+			resp.setContentType("appliownerion/json"); // This corresponds to MIME type standards
 			
 			//Successful Code Return
 			resp.setStatus(200);
@@ -94,19 +89,20 @@ public class CatServlet extends HttpServlet
 		
 		try 
 		{
-			// Jackson Databind parsing the jsonString and creating an InsertCatTemplate object, with that data
-			Cat catData = objectMapper.readValue(jsonString, Cat.class);
+			// Jackson Databind parsing the jsonString and creating an InsertOwnerTemplate object, with that data
+			Owner ownerData = objectMapper.readValue(jsonString, Owner.class);
 			
-			Cat catCollector = catService.addNewCat(catData.getName(), catData.getOwnerName(), catData.getColor(), catData.getBreed());
+			Owner newOwner = ownerService.addNewOwner(ownerData.getUsername(), ownerData.getPassword(), ownerData.getAdmin());
 			
-			String insertedCatJSON = objectMapper.writeValueAsString(catCollector);
-			resp.getWriter().append(insertedCatJSON);
+			String insertedOwnerJSON = objectMapper.writeValueAsString(newOwner);
+			resp.getWriter().append(insertedOwnerJSON);
 			
-			resp.setContentType("application/json");
+			resp.setContentType("appliownerion/json");
 			
 			//Success
 			resp.setStatus(201);
 		} 
+//		catch (JsonProcessingException | SQLException e)
 		catch (Exception e)
 		{
 			//Bad Content
@@ -132,11 +128,11 @@ public class CatServlet extends HttpServlet
 		try 
 		{
 			// Jackson Databind parsing the jsonString and creating an InsertCatTemplate object, with that data
-			Cat catData = objectMapper.readValue(jsonString, Cat.class);
+			Owner ownerData = objectMapper.readValue(jsonString, Owner.class);
 			
-			Boolean catUpdateSuccess = catService.updateCatByUID(catData.getUID(), catData.getName(), catData.getOwnerName(), catData.getColor(), catData.getBreed());
+			Boolean ownerUpdateSuccess = ownerService.updateOwnerByUsername(ownerData.getUsername(), ownerData.getPassword(), ownerData.getAdmin(), ownerData.getSessionData());
 			
-			if (catUpdateSuccess)
+			if (ownerUpdateSuccess)
 			{
 				//Success - Should Never Return a Body
 				resp.setStatus(200);
@@ -160,14 +156,14 @@ public class CatServlet extends HttpServlet
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException 
 	{
-		//removeCatByUID
+		//removeOwnerByUID
 		try 
 		{
-			String uid = req.getParameter("UID");
+			String targetUsername = req.getParameter("username");
 			
-			if (uid != null)
+			if (targetUsername != null)
 			{
-				if (catService.removeCatByUID(Integer.parseInt(uid)))
+				if (ownerService.removeOwnerByUsername(targetUsername))
 				{
 					//You done good Mr. President
 					resp.setStatus(200);

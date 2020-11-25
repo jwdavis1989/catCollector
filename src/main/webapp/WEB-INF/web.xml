@@ -19,4 +19,15 @@
     <servlet-name>CatServlet</servlet-name>
     <url-pattern>/cat</url-pattern>
   </servlet-mapping>
+  
+    <servlet>
+    <description></description>
+    <display-name>OwnerServlet</display-name>
+    <servlet-name>OwnerServlet</servlet-name>
+    <servlet-class>com.revature.catCollector.servlet.OwnerServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>OwnerServlet</servlet-name>
+    <url-pattern>/owner</url-pattern>
+  </servlet-mapping>
 </web-app>
