@@ -114,7 +114,7 @@ public class DatabaseCatDAO
 			//Fill in SQL Statement's values
 			prepdStatement.setString(1, targetOwnerName);
 			
-			ResultSet rs = prepdStatement.executeQuery(sqlQuery);
+			ResultSet rs = prepdStatement.executeQuery();
 			
 			//Fill in each arrayList Cat's UID, name, ownerName, color, breed, imageURL
 			while (rs.next()) 
@@ -152,9 +152,8 @@ public class DatabaseCatDAO
 		sanitize for SQL injection
 	 * @param name, the name of the Cat.
 	 * @param ownerName, name of the Owner of the Cat.
-	 * @param color, the color of the Cat.
+	 * @param color, the color of the Cat. Dynamically sets the imageURL.
 	 * @param breed, the breed of the Cat.
-	 * @param imageURL, the location of the image on the server's disk.
 	 * @return Cat or null
 	 */
 	public Cat addNewCat(String name, String ownerName, String color, String breed) 
